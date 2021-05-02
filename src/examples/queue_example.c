@@ -30,7 +30,7 @@ int main() {
     }
     Que_Push(q, &x);
     Que_Push(q, &x);
-    /*
+
     if((func=Que_Pop(q)) == NULL) {
         printf("pop failed\n");
         return -1;
@@ -44,7 +44,8 @@ int main() {
     func();
     int* y = Que_Pop(q);
     int* z = Que_Pop(q);
-    printf("y=%d\n", *y);*/
+    printf("y=%d\n", *y);
+    Que_Delete(q);
     printf("Done\n");
     return 0;
 }

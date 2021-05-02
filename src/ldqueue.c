@@ -95,11 +95,21 @@ void* Que_Pop(queue_ld* queue) {
         }
         void* item = slot->item;
         free(slot);
+        q->queue_size--;
         return item;
     }
     fprintf(stderr, "queue empty\n");
     return NULL;
 }
 
-int Que_Delete();
+int Que_Delete(queue_ld* queue) {
+    queue_intern* q =(queue_intern*)queue;
+    int max_size = q->queue_size;
+    for(int i=0;i<max_size;i++) {
+        Que_Pop(queue);
+    }
+
+    free(q);
+    return 0;
+}
 
