@@ -1,7 +1,8 @@
 /*** Includes **************************/
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
-#include "ldqueue.h"
+#include "wcon/common/util.h"
 /** Typedefs ***************************/
 typedef struct _queue_slot queue_slot;
 
@@ -20,29 +21,34 @@ typedef struct _queue_intern {
 
 
 /*** Declarition ***********************/
-queue_ld* Que_CreateQueue(int queue_size) {
+queue_o UTIL_CreateQueue(int queue_size) {
+    int i;
     queue_intern* q = malloc(sizeof(*q));
 
     if(q == NULL) {
         fprintf(stderr, "out of memory queue\n");
         return NULL;
     }
-    queue_slot* slot = malloc(sizeof(*slot));
+    queue_slot* slot = malloc(queue_size * sizeof(*slot));
     if(slot == NULL) {
         fprintf(stderr, "out of memory slot\n");
         return NULL;
     }
-    slot->next = NULL;
-    slot->item = NULL;
-    q->first = slot;
-    q->last = slot;
+    memset(slot, 0x00, queue_size*sizeof(*slot));
+
+    for(i=0;i<=queue_size-1;i++) {
+        slot[i].next = &slot[(i+1)%queue_size];
+        slot[i].item = NULL;
+    }
+    q->first = &slot[0];
+    q->last = &slot[0];
     q->queue_size = 0;
     q->queue_maxsize = queue_size;
 
-    return (queue_ld*)q;
+    return (queue_o)q;
 }
 
-int Que_Push(queue_ld* queue, void* item) {
+int UTIL_PushQueue(queue_o queue, void* item) {
     queue_intern* q = (queue_intern*)queue;
 
     if(q == NULL) {
@@ -51,7 +57,7 @@ int Que_Push(queue_ld* queue, void* item) {
     }
 
     if(item == NULL) {
-        fprintf(stderr, "invalid item funktion");
+        fprintf(stderr, "invalid item");
         return -1;
     }
 
@@ -59,42 +65,29 @@ int Que_Push(queue_ld* queue, void* item) {
         fprintf(stderr, "queue already full\n");
         return -1;
     }
-
-    if(q->queue_size == 0) {
-        printf("First\n");
-        q->first->item = item;
-        
-    }else {
-        printf("Add\n");
-        queue_slot* slot = malloc(sizeof(*slot));
-        if(slot == NULL) {
-            fprintf(stderr, "out of memory slot\n");
-            return -1;
-        }
-        slot->item = item;
-        slot->next = NULL;
-        q->last->next = slot;
-        q->last = slot;
-    }
+    
+    q->last->item = item;
+    q->last = q->last->next;
     q->queue_size++;
 
     return 0;
 }
 
-void* Que_Pop(queue_ld* queue) {
+void* UTIL_PopQueue(queue_o queue) {
     queue_intern* q = (queue_intern*)queue;
+    queue_slot* slot;
     if(q == NULL) {
         fprintf(stderr, "invalid queue handle\n");
         return NULL;
     }
-    if(q->first != NULL) {
-        queue_slot* slot = q->first;
+    if(q->queue_size != 0) {
+        slot = q->first;
         q->first = NULL;
         if(slot->next != NULL) {
             q->first = slot->next;
         }
         void* item = slot->item;
-        free(slot);
+        slot->item = NULL;
         q->queue_size--;
         return item;
     }
@@ -102,14 +95,23 @@ void* Que_Pop(queue_ld* queue) {
     return NULL;
 }
 
-int Que_Delete(queue_ld* queue) {
-    queue_intern* q =(queue_intern*)queue;
+int UTIL_DeleteQueue(queue_o* queue) {
+    queue_intern* q =(queue_intern*)*queue;
     int max_size = q->queue_size;
+    queue_slot* slot = q->first;
     for(int i=0;i<max_size;i++) {
-        Que_Pop(queue);
+        queue_slot* next = slot->next;
+        if(slot != NULL) {
+            free(slot);
+        }
+        slot = next;
     }
-
     free(q);
+    q = NULL;
     return 0;
 }
 
+int UTIL_SizeQueue(queue_o queue) {
+    queue_intern* q =(queue_intern*)queue;
+    return q->queue_size;
+}
