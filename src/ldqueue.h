@@ -1,15 +1,38 @@
-#ifndef _LDQUEUE_H
-#define _LDQUEUE_H
+/****************************************************************************
+*
+*   util.h: Util Routinen
+*
+*	Beschreibung:   
+*
+* 	Historie:
+*
+*	26.04.2021  		ri			erstellt
+*
+*
+****************************************************************************/
+#ifndef _WCON_UTIL_H
+#define _WCON_UTIL_H
 
-/*** Includes ***********************/
+/**** INCLUDE **************************************************************/
+#if __linux__
+
+#elif _WIN32
+
+#elif _BECK_RTOS
+
+#endif
+
+/**** DEFINES **************************************************************/
+
+/**** PROTOTYPES ***********************************************************/
 
 /*** Typedefs ***********************/
-typedef struct _queue_ld* queue_ld;
+typedef struct _queue_o* queue_o;
 
 /*** Definitions ********************/
-queue_ld* Que_CreateQueue(int queue_size);
-int Que_Push(queue_ld* queue, void* item);
-void* Que_Pop(queue_ld* queue);
-int Que_Delete(queue_ld* queue);
-
-#endif // _LDQUEUE_H
+queue_o UTIL_CreateQueue(int queue_size);
+int UTIL_PushQueue(queue_o queue, void* item);
+void* UTIL_PopQueue(queue_o queue);
+int UTIL_DeleteQueue(queue_o* queue);
+int UTIL_SizeQueue(queue_o queue);
+#endif // _WCON_UTIL_H
